@@ -5,18 +5,19 @@ import com.example.demo.domain.User;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ConflictException;
 import com.example.demo.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.utils.CryptoUtil;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class UserService {
     public static final String FAKE_JWT_TOKEN = "fakeJwtToken";
-    @Autowired
     private UserRepository userRepository;
-
+    private CryptoUtil cryptoUtil;
     public void signUp(SignUpRequest signUpRequest) {
         String username = signUpRequest.getUsername();
-        String password = signUpRequest.getPassword();
+        String password = cryptoUtil.encryptPassword(signUpRequest.getPassword());
 
         if (username == null || username.length() < 1 || username.length() > 10) {
             throw new BadRequestException("username must be 1 ~ 10 length.");
@@ -32,7 +33,7 @@ public class UserService {
 
     public String login(String username, String password) {
         User user = userRepository.findOneUser(username);
-        if (!user.getPassword().equals(password)) {
+        if (!cryptoUtil.validatePassword(password, user.getPassword())) {
             throw new RuntimeException();
         }
 
