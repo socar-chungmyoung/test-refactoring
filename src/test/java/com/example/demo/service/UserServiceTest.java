@@ -5,6 +5,7 @@ import com.example.demo.domain.User;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ConflictException;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.utils.CryptoUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,8 @@ public class UserServiceTest {
     private UserService userService;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private CryptoUtil cryptoUtil;
 
     @Test
     public void login_method는_username과_password를_받아서_DB에_들어있는_패스워드와_일치할경우_FAKE_JWT_TOKEN을_반환한다() {
@@ -35,12 +38,31 @@ public class UserServiceTest {
 
         when(userRepository.findOneUser("kai"))
                 .thenReturn(new User(username, password));
+        when(cryptoUtil.validatePassword(password, password))
+                .thenReturn(true);
 
         // when
         String jwtToken = userService.login(username, password);
 
         // then
         assertThat(jwtToken).isEqualTo("fakeJwtToken");
+    }
+
+    @Test
+    public void login_method에서_password가_일치하지_않을_경우_RuntimeException을_던진다() {
+        // given
+        String username = "jihwan";
+        String password = "111111";
+        String wrongPassword = "123456";
+
+        when(userRepository.findOneUser(username))
+                .thenReturn(new User(username, password));
+
+        // then
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            // when
+            userService.login(username, wrongPassword);
+        });
     }
 
     @Test
