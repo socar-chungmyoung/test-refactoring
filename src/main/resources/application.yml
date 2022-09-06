@@ -1,0 +1,24 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+  data:
+    mongodb:
+      database: kai-test
+      host: localhost
+      port: 27017
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: integration-test
+  data:
+    mongodb:
+      database: kai-test
+      host: localhost
+
+context:
+  initializer:
+    classes: com.example.demo.config.TestContainerConfiguration.TestEnvironmentsInitializer
